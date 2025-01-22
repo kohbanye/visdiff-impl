@@ -24,17 +24,11 @@ class Ranker:
             padding="max_length",
             truncation=True,
             max_length=77,
+            do_rescale=False,
         ).to(self.model.device)
         outputs = self.model(**inputs)
-        logits_per_image = (
-            outputs.logits_per_image
-        )  # this is the image-text similarity score
-        probs = logits_per_image.softmax(
-            dim=1
-        )  # we can take the softmax to get probabilities
-        return (
-            probs[:, 0].detach().cpu().numpy()
-        )  # Assuming text at index 0 is the positive text.
+        probs = outputs.logits_per_image.softmax(dim=0)
+        return probs[:, 0].detach().cpu().numpy()
 
     def rank(
         self,
@@ -56,6 +50,6 @@ class Ranker:
 
             ranked_differences.append((difference, auroc))
 
-        # Sort by AUROC in descending order (higher AUROC is better)
+        # Sort by AUROC in descending order
         ranked_differences.sort(key=lambda x: x[1], reverse=True)
         return ranked_differences
