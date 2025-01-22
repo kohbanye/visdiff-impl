@@ -1,7 +1,14 @@
+from pydantic import BaseModel
+
 from data import VisDiffDataset, VisDiffDatasetName
 from evaluate import Evaluator, Metrics, Prediction
 from proposer import Proposer
 from ranker import Ranker
+
+
+class Results(BaseModel):
+    predictions: list[Prediction]
+    metrics: list[Metrics]
 
 
 class VisDiffPipeline:
@@ -54,7 +61,7 @@ if __name__ == "__main__":
     load_dotenv()
     logging.basicConfig(level=logging.INFO)
 
-    dataset = VisDiffDataset(name=VisDiffDatasetName.EASY_REDUCED)
+    dataset = VisDiffDataset(name=VisDiffDatasetName.EASY)
 
     proposer = Proposer()
     ranker = Ranker()
@@ -64,6 +71,10 @@ if __name__ == "__main__":
 
     predictions = pipeline.predict(dataset)
     metrics_list = pipeline.evaluate(predictions)
+
+    results = Results(predictions=predictions, metrics=metrics_list)
+    with open("results.json", "w") as f:
+        f.write(results.model_dump_json(indent=2))
 
     for prediction, metrics in zip(predictions, metrics_list):
         print(f"Set 1: {prediction.set1_label}, Set 2: {prediction.set2_label}")
