@@ -1,3 +1,4 @@
+import logging
 import random
 
 import torch
@@ -13,6 +14,7 @@ class Proposer:
         llm_model_name="gpt-4o",
         subset_size=20,
     ):
+        self.logger = logging.getLogger(__name__)
         self.processor = Blip2Processor.from_pretrained(caption_model_name)
         self.model = (
             Blip2ForConditionalGeneration.from_pretrained(caption_model_name).to("cuda")
@@ -33,11 +35,15 @@ class Proposer:
         )
         return generated_text
 
-    def propose(self, image_set_a: list[Image.Image], image_set_b: list[Image.Image]):
+    def propose(
+        self, image_set_a: list[Image.Image], image_set_b: list[Image.Image]
+    ) -> list[str]:
         subset_a = random.sample(image_set_a, min(len(image_set_a), self.subset_size))
         subset_b = random.sample(image_set_b, min(len(image_set_b), self.subset_size))
 
+        self.logger.info("Generating captions for subset A...")
         captions_a = self._generate_captions(subset_a)
+        self.logger.info("Generating captions for subset B...")
         captions_b = self._generate_captions(subset_b)
 
         prompt = f"""\
@@ -57,6 +63,8 @@ Do not talk about the caption, e.g., "caption with one word" and do not list mor
 * INCORRECT: "Insects (cockroach, dragonfly, grasshopper)" CORRECTED: "insects"
 Again, I want to figure out what kind of distribution shift are there. List properties that hold more often for the images (not captions) in group A compared to group B. Answer with a list (separated by bullet points "*").
 """
+
+        self.logger.info("Requesting completion to find differences...")
         completion = self.openai_client.chat.completions.create(
             model=self.llm_model_name,
             messages=[
@@ -68,9 +76,11 @@ Again, I want to figure out what kind of distribution shift are there. List prop
             ],
         )
 
-        differences = [
-            choice.message.content
-            for choice in completion.choices
-            if choice.message.content is not None
+        difference_response = completion.choices[0].message.content
+        if difference_response is None:
+            self.logger.error("Failed to get a response from the model.")
+            return []
+        return [
+            line.replace("*", "").replace('"', "").strip()
+            for line in difference_response.split("\n")
         ]
-        return differences

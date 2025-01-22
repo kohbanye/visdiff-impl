@@ -35,11 +35,14 @@ class VisDiffPipeline:
 
 
 if __name__ == "__main__":
+    import logging
+
     from dotenv import load_dotenv
 
     load_dotenv()
+    logging.basicConfig(level=logging.INFO)
 
-    dataset = VisDiffDataset(name=VisDiffDatasetName.EASY)
+    dataset = VisDiffDataset(name=VisDiffDatasetName.HARD_REDUCED)
 
     proposer = Proposer()
     ranker = Ranker()

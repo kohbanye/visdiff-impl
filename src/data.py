@@ -12,8 +12,10 @@ DATASET_DIR = "VisDiffBench-release"
 
 class VisDiffDatasetName(Enum):
     EASY = "easy"
+    EASY_REDUCED = "easy_reduced"
     MEDIUM = "medium"
     HARD = "hard"
+    HARD_REDUCED = "hard_reduced"
     IMAGENETR = "imagenetr"
     IMAGENETSTAR = "imagenetstar"
 
