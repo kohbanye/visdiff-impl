@@ -54,6 +54,7 @@ class VisDiffPipeline:
 
 
 if __name__ == "__main__":
+    import argparse
     import logging
 
     from dotenv import load_dotenv
@@ -61,9 +62,19 @@ if __name__ == "__main__":
     load_dotenv()
     logging.basicConfig(level=logging.INFO)
 
-    dataset = VisDiffDataset(name=VisDiffDatasetName.EASY)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        choices=[name.value for name in VisDiffDatasetName],
+        default=VisDiffDatasetName.EASY_REDUCED.value,
+    )
+    args = parser.parse_args()
 
-    proposer = Proposer()
+    dataset_name = VisDiffDatasetName(args.dataset)
+    dataset = VisDiffDataset(name=dataset_name)
+
+    proposer = Proposer(caption_model_name="Salesforce/blip2-opt-6.7b-coco")
     ranker = Ranker()
     evaluator = Evaluator()
 
@@ -73,7 +84,7 @@ if __name__ == "__main__":
     metrics_list = pipeline.evaluate(predictions)
 
     results = Results(predictions=predictions, metrics=metrics_list)
-    with open("results.json", "w") as f:
+    with open(f"results_{dataset_name.value}.json", "w") as f:
         f.write(results.model_dump_json(indent=2))
 
     for prediction, metrics in zip(predictions, metrics_list):
