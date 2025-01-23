@@ -8,6 +8,8 @@ Download VissDiffBench dataset from `https://drive.google.com/file/d/1vghFd0rB5U
 
 ## How to run
 
+Set OpenAI API key in `.env` file and run the following commands:
+
 ```bash
 uv sync
 uv run python src/pipeline.py --dataset easy
