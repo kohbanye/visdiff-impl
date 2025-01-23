@@ -18,6 +18,7 @@ class VisDiffDatasetName(Enum):
     HARD_REDUCED = "hard_reduced"
     IMAGENETR = "imagenetr"
     IMAGENETSTAR = "imagenetstar"
+    MINE = "mine"
 
 
 class ImageSetInfo(BaseModel):
@@ -26,8 +27,8 @@ class ImageSetInfo(BaseModel):
     difference: str
     set1_images: list[str]
     set2_images: list[str]
-    set1_images_url: list[str]
-    set2_images_url: list[str]
+    set1_images_url: list[str] | None = None
+    set2_images_url: list[str] | None = None
 
 
 class VisDiffData(BaseModel, arbitrary_types_allowed=True):
@@ -74,8 +75,12 @@ class VisDiffDataset(Dataset):
         set1_images_resized = [resize_transform(img) for img in set1_images]
         set2_images_resized = [resize_transform(img) for img in set2_images]
 
-        set1_images_tensor = torch.stack([tensor_transform(img) for img in set1_images_resized])
-        set2_images_tensor = torch.stack([tensor_transform(img) for img in set2_images_resized])
+        set1_images_tensor = torch.stack(
+            [tensor_transform(img) for img in set1_images_resized]
+        )
+        set2_images_tensor = torch.stack(
+            [tensor_transform(img) for img in set2_images_resized]
+        )
 
         return VisDiffData(
             set1_images=set1_images,
