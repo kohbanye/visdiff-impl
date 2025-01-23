@@ -1,6 +1,6 @@
 # visdiff-impl
 
-This is the reimplementation of the paper "Describing differences in image sets with natural language" by Dunlap et al. The original paper can be found at `https://arxiv.org/abs/2312.02974`.
+This is the reimplementation of the paper "Describing differences in image sets with natural language" by Dunlap et al. The original paper can be found at <https://arxiv.org/abs/2312.02974>.
 
 ## Dataset
 
